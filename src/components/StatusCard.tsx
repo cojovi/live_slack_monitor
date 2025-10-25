@@ -6,21 +6,6 @@ interface StatusCardProps {
   animationsEnabled: boolean;
 }
 
-const getStatusColor = (status: SlackStatus['status']) => {
-  switch (status) {
-    case 'online':
-      return 'emerald';
-    case 'away':
-      return 'amber';
-    case 'dnd':
-      return 'red';
-    case 'offline':
-      return 'slate';
-    default:
-      return 'slate';
-  }
-};
-
 const getStatusLabel = (status: SlackStatus['status']) => {
   switch (status) {
     case 'online':
@@ -36,9 +21,21 @@ const getStatusLabel = (status: SlackStatus['status']) => {
   }
 };
 
+const formatExpiration = (timestamp: number | null) => {
+  if (!timestamp || timestamp <= Date.now()) {
+    return null;
+  }
+
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
+
 export const StatusCard: React.FC<StatusCardProps> = ({ status, animationsEnabled }) => {
-  const colorClass = getStatusColor(status.status);
   const statusLabel = getStatusLabel(status.status);
+  const expirationLabel = formatExpiration(status.statusExpiration);
 
   return (
     <div className="flex flex-col items-center space-y-6 p-8">
@@ -61,14 +58,14 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, animationsEnable
             animationDuration: status.status === 'online' ? '2s' : '3s'
           }}
         />
-        
+
         <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-white/20 bg-slate-800">
           <img
             src={status.avatar}
             alt={status.realName}
             className="w-full h-full object-cover"
           />
-          
+
           {/* Status Indicator */}
           <div
             className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-slate-900 ${
@@ -104,12 +101,17 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, animationsEnable
       </div>
 
       {/* Status Text */}
-      <div className="text-center">
+      <div className="text-center space-y-1">
         <div className="flex items-center justify-center space-x-2 mb-2">
           <span className="text-2xl">{status.statusEmoji}</span>
           <span className="text-xl text-slate-200 font-medium">{status.statusText}</span>
         </div>
-        <p className="text-sm text-slate-400">
+        {expirationLabel && (
+          <p className="text-sm text-slate-300">
+            Busy until {expirationLabel}
+          </p>
+        )}
+        <p className="text-xs text-slate-500">
           Last updated: {new Date(status.timestamp).toLocaleTimeString()}
         </p>
       </div>

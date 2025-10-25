@@ -7,6 +7,7 @@ export interface SlackStatus {
   avatar: string;
   realName: string;
   displayName: string;
+  statusExpiration: number | null;
 }
 
 export interface StatusHistoryItem {
